@@ -17,7 +17,8 @@ async function api(path, body) {
 
 /* ---------- house rule: big table bets almost never hit ---------- */
 const BIG = 250;
-const rigged = stake => stake > BIG && Math.random() < 0.95;
+const TILT = 0.05; // small bets lose an extra 5% of the time
+const rigged = stake => Math.random() < (stake > BIG ? 0.95 : TILT);
 
 /* ---------- balance (server is the source of truth) ---------- */
 let ME = null, held = 0, queue = Promise.resolve();

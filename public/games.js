@@ -51,10 +51,11 @@ function renderTables() {
 /* ================= BLACKJACK ================= */
 const bjv = c => c.r === 'A' ? 11 : ['10', 'J', 'Q', 'K'].includes(c.r) ? 10 : +c.r;
 function bjt(h) { let t = 0, a = 0; for (const c of h) { if (c.hide) continue; t += bjv(c); if (c.r === 'A') a++; } while (t > 21 && a) { t -= 10; a--; } return t; }
+function soft(h) { let t = 0, a = 0; for (const c of h) { t += bjv(c); if (c.r === 'A') a++; } while (t > 21 && a) { t -= 10; a--; } return a > 0 && t <= 21; }
 const isBJ = h => h.length === 2 && bjt(h) === 21;
 let BJ = {};
 function blackjack() {
-  $('t-blackjack').innerHTML = `<h2>Blackjack</h2><div class="rules">Blackjack pays 3:2 · Dealer stands on 17 · Double on any two</div>
+  $('t-blackjack').innerHTML = `<h2>Blackjack</h2><div class="rules">Blackjack pays 6:5 · Dealer hits soft 17 · Double on any two</div>
   <div class="handlab">Dealer <span id="dT"></span></div><div class="hand" id="dH"></div>
   <div class="msg" id="bjMsg"></div>
   <div class="hand" id="pH"></div><div class="handlab">You <span id="pT"></span></div>
@@ -69,7 +70,7 @@ function bjDeal() {
   if (BJ.rig) while (bjt(BJ.p) >= 18) BJ.p = [mk(), mk()];
   setMsg('bjMsg', ''); bjDraw();
   const dFull = [BJ.d[0], { ...BJ.d[1], hide: false }];
-  if (isBJ(BJ.p)) { BJ.d[1].hide = false; bjDraw(); return isBJ(dFull) ? bjEnd(BJ.s, 'Push') : bjEnd(Math.floor(BJ.s * 2.5), 'Blackjack!'); }
+  if (isBJ(BJ.p)) { BJ.d[1].hide = false; bjDraw(); return isBJ(dFull) ? bjEnd(BJ.s, 'Push') : bjEnd(Math.floor(BJ.s * 2.2), 'Blackjack!'); }
   if (isBJ(dFull)) { BJ.d[1].hide = false; bjDraw(); return bjEnd(0, 'Dealer blackjack'); }
   $('bjAct').innerHTML = '<button class="btn" id="hit">Hit</button><button class="btn purple" id="stand">Stand</button><button class="btn ghost" id="dbl">Double</button>';
   $('hit').onclick = bjHit; $('stand').onclick = bjStand; $('dbl').onclick = bjDouble;
@@ -97,7 +98,7 @@ async function bjStand() {
     const pool = good.length ? good : mid; if (pool.length) BJ.d[1] = mk(pool[rand(pool.length)]);
   }
   BJ.d[1].hide = false; bjDraw();
-  while (bjt(BJ.d) < 17) {
+  while (bjt(BJ.d) < 17 || (bjt(BJ.d) === 17 && soft(BJ.d))) {
     await sleep(550); let c = mk();
     if (BJ.rig) {
       const win = RANKS.filter(r => { const t = bjt([...BJ.d, { r }]); return t >= 17 && t <= 21 && t > pt; });
@@ -113,16 +114,16 @@ function bjEnd(ret, t) { record('Blackjack', BJ.s, ret); setMsg('bjMsg', t + (re
 
 /* ================= ROULETTE ================= */
 const REDS = new Set([1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]);
-const POCKETS = ['0', '00', ...Array.from({ length: 36 }, (_, i) => String(i + 1))];
-const pc = p => p === '0' || p === '00' ? 'g' : REDS.has(+p) ? 'r' : '';
+const POCKETS = ['0', '00', '000', ...Array.from({ length: 36 }, (_, i) => String(i + 1))];
+const pc = p => p === '0' || p === '00' || p === '000' ? 'g' : REDS.has(+p) ? 'r' : '';
 let rlType = 'red', rlHist = [];
 const RL = { red: ['Red', 2], black: ['Black', 2], odd: ['Odd', 2], even: ['Even', 2], low: ['1–18', 2], high: ['19–36', 2], d1: ['1st 12', 3], d2: ['2nd 12', 3], d3: ['3rd 12', 3], num: ['Number', 36] };
 function rlWins(t, p) {
-  const n = +p; if (p === '0' || p === '00') return t === 'num' && $('rlNum').value === p;
+  const n = +p; if (p === '0' || p === '00' || p === '000') return t === 'num' && $('rlNum').value === p;
   return { red: REDS.has(n), black: !REDS.has(n), odd: n % 2 === 1, even: n % 2 === 0, low: n <= 18, high: n >= 19, d1: n <= 12, d2: n > 12 && n <= 24, d3: n > 24, num: $('rlNum').value === p }[t];
 }
 function roulette() {
-  $('t-roulette').innerHTML = `<h2>Roulette</h2><div class="rules">American wheel with 0 and 00 · Number pays 35:1</div>
+  $('t-roulette').innerHTML = `<h2>Roulette</h2><div class="rules">Triple-zero wheel: 0, 00 and 000 · Number pays 35:1</div>
   <div class="wheel" id="wh">–</div><div class="strip" id="rlStrip"></div>
   <div class="msg" id="rlMsg"></div>
   <div class="pick" id="rlPick">${Object.entries(RL).map(([k, v]) => `<button data-t="${k}" class="${k === rlType ? 'on' : ''}">${v[0]}</button>`).join('')}</div>
@@ -133,10 +134,10 @@ function roulette() {
 function rlStrip() { $('rlStrip').innerHTML = rlHist.map(p => `<span class="${pc(p)}">${p}</span>`).join(''); }
 async function rlSpin() {
   const s = bv('rlBet'); if (!take(s)) return; on('rl'); $('spin').disabled = true; setMsg('rlMsg', '');
-  const rig = rigged(s); let p = POCKETS[rand(38)];
-  if (rig) while (rlWins(rlType, p)) p = POCKETS[rand(38)];
+  const rig = rigged(s); let p = POCKETS[rand(39)];
+  if (rig) while (rlWins(rlType, p)) p = POCKETS[rand(39)];
   const wh = $('wh');
-  for (let i = 0; i < 18; i++) { const x = POCKETS[rand(38)]; wh.textContent = x; wh.className = 'wheel ' + pc(x); await sleep(40 + i * 8); }
+  for (let i = 0; i < 18; i++) { const x = POCKETS[rand(39)]; wh.textContent = x; wh.className = 'wheel ' + pc(x); await sleep(40 + i * 8); }
   wh.textContent = p; wh.className = 'wheel ' + pc(p);
   rlHist.unshift(p); rlHist = rlHist.slice(0, 14); rlStrip();
   const ret = rlWins(rlType, p) ? s * RL[rlType][1] : 0;
