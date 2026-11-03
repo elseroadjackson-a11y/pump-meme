@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bando Casino</title>
+<link rel="icon" href="/logo.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@500;700;800&family=JetBrains+Mono:wght@600;800&display=swap">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<section id="login" class="login wrap hidden">
+  <img src="/logo.webp" alt="Bando Casino">
+  <p class="muted" id="loginText">Log in to your account.</p>
+  <form id="loginForm">
+    <input id="lu" placeholder="Username" autocomplete="username" autocapitalize="none">
+    <input id="lp" type="password" placeholder="Password" autocomplete="current-password">
+    <button class="btn" id="loginBtn">Log in</button>
+  </form>
+  <div class="err" id="loginErr"></div>
+</section>
+
+<div id="app" class="hidden">
+  <header class="top"><div class="topin">
+    <img src="/logo.webp" alt="Bando Casino">
+    <nav class="tabs" id="tabs"></nav>
+    <div class="who">
+      <span class="role" id="role"></span>
+      <span class="balpill" id="bal">0</span>
+      <button class="btn ghost sm" id="logout">Log out</button>
+    </div>
+  </div></header>
+  <main class="wrap" id="view"></main>
+</div>
+<div class="toast hidden" id="toast"></div>
+
+<script src="/app.js"></script>
+<script src="/games.js"></script>
+<script src="/slots.js"></script>
+<script src="/sportsbook.js"></script>
+<script>boot()</script>
+</body>
+</html>

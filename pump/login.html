@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pump.meme</title>
+<meta name="robots" content="noindex,nofollow"><link rel="icon" href="logo.png">
+<style>
+:root{--bg:#050806;--card:#0c130e;--ink:#f2fff6;--mute:#8fb39b;--line:#17301f;--acc:#21e06b;--down:#ff5c7a;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;padding:16px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:28px;width:min(380px,100%);text-align:center}
+img{width:120px;height:120px}h1{margin:8px 0 4px;font-size:30px;font-style:italic;letter-spacing:-.02em}h1 span{color:var(--acc)}
+p{color:var(--mute);margin:0 0 18px}
+input{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px;text-align:center}
+button{width:100%;margin-top:10px;font:inherit;font-weight:700;color:#04140a;background:var(--acc);border:0;border-radius:10px;padding:11px;cursor:pointer;box-shadow:0 0 14px #21e06b55}
+input:focus-visible,button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+#e{color:var(--down);min-height:20px;margin-top:10px;font-size:14px}
+</style></head><body><div class="box">
+<img src="logo.png" alt=""><h1>pump<span>.meme</span></h1><p>Enter your site key to come in.</p>
+<input id="k" type="password" placeholder="pm-…" autocomplete="off" autofocus><button id="b">Enter</button><div id="e" role="alert"></div>
+</div><script>
+const go=async()=>{const r=await fetch('login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({key:document.getElementById('k').value})});
+if(r.ok)location.reload();else document.getElementById('e').textContent=(await r.json()).error||'Something went wrong.'};
+document.getElementById('b').onclick=go;document.getElementById('k').onkeydown=e=>{if(e.key==='Enter')go()};
+</script></body></html>

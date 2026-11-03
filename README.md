@@ -1,25 +1,27 @@
-# pump.meme
+# Bando Casino
 
-Real pump.fun coins, real SOL, signed by your Phantom wallet. Runs on your computer only.
+Personal play-money casino. Master account → bookie accounts → player accounts, table games, slots, and a sportsbook on ESPN lines.
 
-## Run it
-1. Install Node 18+.
-2. `npm install`
-3. Get a free RPC URL (Helius or QuickNode). The public Solana RPC blocks sending.
-4. `RPC_URL="https://your-rpc-url" npm start` (Windows PowerShell: `$env:RPC_URL="..."; npm start`)
-5. Open http://localhost:3000
+## Run on your Mac
+```
+npm install
+npm start
+```
+Open http://localhost:3000. With no database set, it runs on a temporary in-memory one that resets on restart.
 
-## Wallet setup
-- In Phantom, add a new account (e.g. "pump project") and connect that one. Send SOL to its address from your exchange or main wallet. That is your deposit.
-- Launching with "separate wallet per coin" creates a new keypair in this browser, funds it from Phantom, and launches from it. Those keys sit in this browser's localStorage. Use "Download backup" in the Coin wallets panel, and never clear site data while they hold SOL.
-- Coins you launch are sell-only in the UI.
+## Put it online (Render + Neon)
+1. **Database:** sign up at neon.tech (free), create a project, copy the connection string (starts with `postgresql://`).
+2. **Code:** push this folder to a GitHub repo.
+3. **Render:** New → Web Service → pick the repo.
+   - Build command: `npm install`
+   - Start command: `npm start`
+   - Environment variables:
+     - `DATABASE_URL` = your Neon connection string
+     - `SESSION_SECRET` = any long random string
+     - `NODE_ENV` = `production`
+4. Open the site. The first visit asks you to create the master account.
 
-## Before real money
-Untested against live mainnet. Try 0.01 SOL first. Most coins on pump.fun go to zero, so only use SOL you can lose. Every trade asks for a confirmation and Phantom asks again.
-
-## Site keys
-Nobody gets in without a key, and each person gets their own.
-- Make one: `node keys.js add sarah` (prints the key once, copy it then)
-- See who has one: `node keys.js list`
-- Lock someone out: `node keys.js revoke sarah` (works immediately)
-Make one for yourself first. Keys are stored hashed in `keys.json`, so keep that file and `secret.txt` private.
+## House rules
+- Table game and slot bets over 250 lose about 95% of the time (`BIG` in `public/app.js`).
+- Slots pay back around 87–89%.
+- Sports bets settle automatically about every 10 minutes after games go final.

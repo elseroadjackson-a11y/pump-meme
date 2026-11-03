@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>pump.meme</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="logo.png">
+<style>
+:root{--bg:#050806;--card:#0c130e;--ink:#f2fff6;--mute:#8fb39b;--line:#17301f;--up:#2dff7f;--down:#ff5c7a;--acc:#21e06b;--acc2:#b8ff2e;--warn:#ffc233;box-sizing:border-box;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:980px;margin:0 auto;padding:16px}
+header{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:10px;font-size:30px;font-weight:800;font-style:italic;letter-spacing:-.02em}.logo img{width:52px;height:52px}.logo span{color:var(--acc)}
+.me{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pill{background:var(--card);border:1px solid var(--line);border-radius:99px;padding:6px 12px;font-weight:600}
+button{font:inherit;font-weight:600;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 12px;cursor:pointer}
+button:hover{border-color:var(--acc)}button:disabled{opacity:.4;cursor:not-allowed}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.go{background:var(--acc);color:#04140a;border-color:var(--acc);box-shadow:0 0 14px #21e06b55}.sell{color:var(--down)}
+.warn{border:1px solid var(--warn);border-radius:10px;padding:8px 12px;font-size:13px;margin:12px 0}
+.note{font-size:13px;color:var(--mute);margin:8px 0}.mu{color:var(--mute)}.sm{font-size:13px}
+.tabs{display:flex;gap:6px;margin:14px 0}.tabs button.on{background:var(--ink);color:var(--bg)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;gap:10px;cursor:pointer}
+.card:hover{border-color:var(--acc);box-shadow:0 0 18px #21e06b33}
+.em{width:52px;height:52px;border-radius:12px;background:var(--bg);object-fit:cover;flex:none}
+.ci{min-width:0;flex:1}.ci b{overflow:hidden;text-overflow:ellipsis}
+.row{display:flex;gap:8px;align-items:center;margin:6px 0;font-size:13px;flex-wrap:wrap}
+.bar{height:6px;background:var(--bg);border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2))}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin:12px 0}
+.stats div,.box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px}
+.stats b{display:block;font-size:18px}
+.trade{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.btns input{width:90px}
+input,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px;width:100%}
+label{display:block;font-size:13px;color:var(--mute);margin:10px 0 4px}
+.addr{font-size:12px;color:var(--mute);word-break:break-all}
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--ink);width:min(460px,92vw);padding:18px}
+dialog::backdrop{background:#0008}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;z-index:9;max-width:90vw}
+.dn{color:var(--down)}.up{color:var(--up)}.tbl{width:100%;border-collapse:collapse;font-size:13px}.tbl td,.tbl th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}details{margin-top:10px}summary{cursor:pointer;color:var(--mute);font-size:13px}
+</style></head><body><div class="wrap">
+<header><div class="logo"><img src="logo.png" alt=""><div>pump<span>.meme</span></div></div>
+<div class="me"><span class="pill" id="who"></span><a href="logout" class="mu sm">Sign out</a></div></header>
+<div class="warn">Real money. Everything here spends real SOL. Most coins go to zero, so only use SOL you can lose.</div>
+<div id="app"><div class="note">Loading…</div></div>
+
+<dialog id="dlg"><h2>Launch a coin</h2>
+<label>Name</label><input id="fn" maxlength="32">
+<label>Ticker</label><input id="fs" maxlength="10">
+<label>Image</label><input id="ff" type="file" accept="image/*">
+<label>Description</label><textarea id="fd" rows="2" maxlength="200"></textarea>
+<label>Dev buy at launch (SOL)</label><input id="fb" type="number" min="0" step="any" value="0.05">
+<div class="note">Launched from this key’s wallet. Needs the dev buy + about 0.03 SOL for fees. Coins you launch are sell-only.</div>
+<div class="btns" style="margin-top:14px"><button class="go" id="mk">Launch</button><button id="cx">Cancel</button></div></dialog>
+
+<dialog id="kd"><h2>Key created</h2><div class="note">Copy this key now. It is only shown once.</div>
+<div class="box"><div class="addr" id="kv" style="font-size:15px;color:var(--ink)"></div></div>
+<div class="note">Its wallet address:</div><div class="addr" id="kw"></div>
+<div class="btns" style="margin-top:14px"><button class="go" id="kcp">Copy key</button><button id="kx">Done</button></div></dialog>
+</div>
+<script src="vendor/web3.js"></script>
+<script>
+(()=>{
+const {Transaction,SystemProgram,PublicKey,LAMPORTS_PER_SOL}=solanaWeb3;
+const $=s=>document.querySelector(s),esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const sleep=ms=>new Promise(r=>setTimeout(r,ms)),short=a=>a.slice(0,4)+'…'+a.slice(-4);
+const fmt=(n,d)=>n==null?'—':(+n).toLocaleString('en-US',{maximumFractionDigits:d==null?3:d,minimumFractionDigits:0});
+const pl=n=>n==null?'—':'<span class="'+(n>=0?'up':'dn')+'">'+(n>=0?'+':'')+fmt(n,4)+' SOL</span>';
+const stat=(l,v)=>'<div>'+l+'<b>'+v+'</b></div>';
+function toast(m){const e=document.createElement('div');e.className='toast';e.textContent=m;document.body.appendChild(e);setTimeout(()=>e.remove(),4500)}
+async function j(url,body){const r=await fetch(url,body?{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}:{});
+  if(r.status===401){location.reload();throw new Error('Signed out')}const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Error '+r.status);return d}
+let me=null,cur=null,usd=0,busy=false;
+async function guard(fn){if(busy)return toast('One thing at a time, please wait…');busy=true;try{await fn()}catch(e){toast('Failed: '+String(e.message||e).slice(0,200))}finally{busy=false}}
+
+async function init(){try{me=await j('api/me');$('#who').textContent=(me.role==='master'?'Master key: ':'Key: ')+me.name;
+  j('api/price').then(p=>{usd=p.usd||0}).catch(()=>{});
+  await(me.role==='master'?home():acct(me.name))}catch(e){$('#app').innerHTML='<div class="warn">Something went wrong loading this page: '+esc(e.message||e)+'. Check the Terminal window for an error line.</div>'}}
+
+/* ---------- master home ---------- */
+function keyCard(k){return '<div class="box" style="margin-bottom:10px"><div class="row" style="justify-content:space-between"><b>'+esc(k.name)+'</b><span class="mu sm">'+(k.active?'active':'revoked')+'</span></div><div class="addr">'+esc(k.wallet)+'</div><div class="stats">'+stat('Wallet balance',fmt(k.balance,4)+' SOL')+stat('Coins',k.coins.length?esc(k.coins.map(s=>'$'+s).join(', ')):'none yet')+stat('Put in',fmt(k.deposited,3)+' SOL')+stat('Net P/L',pl(k.pnl))+'</div><div class="btns"><button class="go" data-open="'+esc(k.name)+'">Open records</button><button data-fund="'+esc(k.name)+'" data-pub="'+esc(k.wallet)+'">Fund from Phantom</button><button data-exp="'+esc(k.name)+'">Export wallet</button>'+(k.active?'<button class="sell" data-rev="'+esc(k.name)+'">Revoke key</button>':'')+'</div></div>'}
+async function home(){cur=null;const ks=await j('api/keys');
+  $('#app').innerHTML='<section class="box"><b>Create a new key</b><div class="note">Each key gets its own wallet and its own records. You can launch as many coins as you like under one key.</div><div class="btns"><input id="kn" placeholder="name, e.g. coin-1" maxlength="32" style="width:220px"><button class="go" id="kc">Create key</button></div></section><div class="btns" style="margin:0 0 10px"><button data-home>Refresh</button></div>'+(ks.length?ks.map(keyCard).join(''):'<div class="note">No keys yet. Create your first one above.</div>')}
+
+/* ---------- one key's page ---------- */
+function ledgerTbl(l,names){return l.length?'<table class="tbl"><tr><th>When</th><th>What</th><th>Coin</th><th>SOL</th></tr>'+l.slice().reverse().map(x=>'<tr><td>'+new Date(x.t).toLocaleString()+'</td><td>'+esc(x.type)+(x.pct?' '+x.pct+'%':'')+'</td><td>'+esc(names[x.coin]||'')+'</td><td>'+(x.sol>0?'+':'')+fmt(x.sol,4)+'</td></tr>').join('')+'</table>':'<div class="note">Nothing yet.</div>'}
+function coinCard(c,names){const st=c.status==='unconfirmed'?' <span class="dn">unconfirmed, check pump.fun</span>':c.graduated?' graduated':'';
+  return '<div class="box" style="margin-bottom:10px"><div class="row" style="justify-content:space-between"><b>'+esc(c.name)+' <span class="mu">$'+esc(c.symbol)+'</span></b><span class="mu sm">'+new Date(c.t).toLocaleDateString()+st+'</span></div><div class="addr">'+esc(c.mint)+' · <a href="https://pump.fun/coin/'+esc(c.mint)+'" target="_blank" rel="noopener">pump.fun</a></div><div class="stats">'+stat('Launch cost',fmt(c.spent,4)+' SOL')+stat('Sold so far',fmt(c.sold,4)+' SOL')+stat('Holding',c.held==null?'—':fmt(c.held/1e6,2)+'M')+stat('Value if sold now',c.value==null?'—':fmt(c.value,4)+' SOL')+stat('Net P/L (est.)',pl(c.pnl))+'</div><div class="btns">'+[25,50,100].map(p=>'<button class="sell" data-sell="'+esc(c.mint)+'" data-p="'+p+'">Sell '+p+'%</button>').join('')+'</div><details><summary>Record for this coin</summary>'+ledgerTbl(c.ledger,names)+'</details></div>'}
+async function acct(name){const a=await j('api/acct?name='+encodeURIComponent(name));cur=a;const names=Object.fromEntries(a.coins.map(c=>[c.mint,c.name+' ($'+c.symbol+')']));
+  $('#app').innerHTML=(me.role==='master'?'<button data-home style="margin-bottom:10px">← All keys</button>':'')+
+  '<section class="box"><div class="row" style="justify-content:space-between"><b>Key: '+esc(a.name)+'</b><button data-copy="'+esc(a.wallet)+'">Copy wallet address</button></div><div class="addr">'+esc(a.wallet)+'</div><div style="font-size:34px;font-weight:800;line-height:1.2">'+fmt(a.balance,4)+' SOL</div><div class="mu">'+(usd?'≈ $'+fmt(a.balance*usd,2)+' · ':'')+'in this key’s wallet</div><div class="stats">'+stat('Put in',fmt(a.deposited,3)+' SOL')+stat('Sent back',fmt(a.withdrawn,3)+' SOL')+stat('Coins worth now',fmt(a.value,4)+' SOL'+(a.valueKnown?'':' +?'))+stat('Net P/L (est.)',pl(a.pnl))+'</div><div class="btns"><button class="go" data-launch>Launch a coin</button><button data-fund="'+esc(a.name)+'" data-pub="'+esc(a.wallet)+'">Fund from Phantom</button><button data-back="'+esc(a.name)+'">Send SOL back to Phantom</button><button data-dl="'+esc(a.name)+'">Download records</button><button data-rf>Refresh</button></div></section>'+
+  '<h2 style="margin:16px 0 8px">Coins</h2>'+(a.coins.length?a.coins.map(c=>coinCard(c,names)).join(''):'<div class="note">No coins yet. Fund this key, then launch one.</div>')+
+  '<h2 style="margin:16px 0 8px">Everything this key has done</h2><section class="box">'+ledgerTbl(a.ledger,names)+'</section>'}
+
+/* ---------- Phantom (only used to move SOL in and out) ---------- */
+async function getPhantom(){const p=window.phantom&&window.phantom.solana;if(!p||!p.isPhantom)throw new Error('Install Phantom first');const r=await p.connect();return{p,addr:r.publicKey.toString()}}
+async function fund(name,pub){const{p,addr}=await getPhantom();const a=parseFloat(prompt('How much SOL to send to key "'+name+'"?\nFrom Phantom account '+short(addr),'0.1'));if(!(a>0))return;
+  if(!confirm('Send '+a+' SOL from Phantom to this key’s wallet ('+short(pub)+')?\n\nThis is real SOL.'))return;
+  const{blockhash}=await j('api/blockhash'),from=new PublicKey(addr);
+  const tx=new Transaction({feePayer:from,recentBlockhash:blockhash}).add(SystemProgram.transfer({fromPubkey:from,toPubkey:new PublicKey(pub),lamports:Math.round(a*LAMPORTS_PER_SOL)}));
+  const{signature}=await p.signAndSendTransaction(tx);toast('Sent. Recording the deposit…');
+  for(let i=0;i<30;i++){try{await j('api/funded',{sig:signature,name});toast('Deposit recorded');return refresh()}catch(e){await sleep(2500)}}
+  toast('Sent, but the site couldn’t confirm it yet. Press Refresh in a minute.')}
+async function sendBack(name){const{addr}=await getPhantom();if(!confirm('Send ALL SOL from key "'+name+'" back to Phantom account '+short(addr)+'?'))return;const r=await j('api/sweep',{name,to:addr});toast('Sent '+fmt(r.sent,4)+' SOL to Phantom');refresh()}
+const refresh=()=>cur?acct(cur.name):home();
+
+/* ---------- clicks ---------- */
+document.addEventListener('click',e=>{const b=e.target.closest('[data-open],[data-fund],[data-exp],[data-rev],[data-home],[data-rf],[data-copy],[data-dl],[data-back],[data-launch],[data-sell],#kc,#kcp,#kx,#cx,#mk');if(!b)return;const d=b.dataset;
+  if(d.open!==undefined)guard(()=>acct(d.open));
+  else if(d.home!==undefined)guard(home);
+  else if(d.rf!==undefined)guard(refresh);
+  else if(d.copy){navigator.clipboard.writeText(d.copy);toast('Copied')}
+  else if(d.dl)location='api/ledger.csv?name='+encodeURIComponent(d.dl);
+  else if(d.fund!==undefined)guard(()=>fund(d.fund,d.pub));
+  else if(d.back!==undefined)guard(()=>sendBack(d.back));
+  else if(d.exp!==undefined)guard(async()=>{if(!confirm('Show the private key for "'+d.exp+'"?\n\nAnyone who has it can take the SOL in that wallet. Use it to import the wallet into Phantom (Add account, Import private key).'))return;const r=await j('api/export',{name:d.exp});prompt('Private key for '+d.exp+' (copy it now):',r.secret)});
+  else if(d.rev!==undefined)guard(async()=>{if(!confirm('Revoke key "'+d.rev+'"?\n\nIt stops working for login. The wallet and records stay here, and you can still export or sell from the master page.'))return;await j('api/keys/revoke',{name:d.rev});home()});
+  else if(d.launch!==undefined)$('#dlg').showModal();
+  else if(d.sell!==undefined)guard(async()=>{if(!confirm('Sell '+d.p+'% of this coin from key "'+cur.name+'"?\n\nThis uses real SOL.'))return;toast('Selling…');const r=await j('api/sell',{name:cur.name,mint:d.sell,pct:+d.p});toast('Sold for about '+fmt(r.received,4)+' SOL');acct(cur.name)});
+  else if(b.id==='kc')guard(async()=>{const r=await j('api/keys',{name:$('#kn').value});$('#kv').textContent=r.key;$('#kw').textContent=r.wallet;$('#kd').showModal();home()});
+  else if(b.id==='kcp'){navigator.clipboard.writeText($('#kv').textContent);toast('Key copied')}
+  else if(b.id==='kx')$('#kd').close();
+  else if(b.id==='cx')$('#dlg').close();
+  else if(b.id==='mk')guard(launch)});
+async function launch(){const n=$('#fn').value.trim(),s=$('#fs').value.trim().toUpperCase(),f=$('#ff').files[0],dev=Math.max(0,+$('#fb').value||0);
+  if(!n||!s||!f)return toast('Add a name, ticker and image');
+  if(!confirm('Launch $'+s+' from key "'+cur.name+'" with a '+dev+' SOL dev buy?\n\nThis uses real SOL.'))return;
+  const fd=new FormData();fd.append('file',f);fd.append('name',n);fd.append('symbol',s);fd.append('description',$('#fd').value.trim());fd.append('showName','true');
+  toast('Uploading image…');const up=await fetch('api/ipfs',{method:'POST',body:fd});if(!up.ok)throw new Error('Image upload failed: '+(await up.text()).slice(0,100));
+  const uri=(await up.json()).metadataUri;toast('Launching…');
+  await j('api/launch',{name:cur.name,tokenName:n,symbol:s,uri,devBuy:dev});$('#dlg').close();toast('$'+s+' launched');acct(cur.name)}
+init();setInterval(()=>{if(!busy&&cur&&!document.querySelector('dialog[open]'))acct(cur.name).catch(()=>{})},45000);
+
+})();
+</script></body></html>
