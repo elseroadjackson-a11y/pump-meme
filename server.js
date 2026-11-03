@@ -57,9 +57,6 @@ function setCookie(res, val, maxAge) {
 
 const app = express();
 app.set('trust proxy', 1);
-// pump.meme lives at /pump with its own key login
-app.get('/pump', (req, res, next) => req.originalUrl.split('?')[0] === '/pump' ? res.redirect('/pump/') : next());
-app.use('/pump', require('./pump/server').app);
 app.use(express.json());
 
 const wrap = fn => (req, res) => fn(req, res).catch(e => { console.error(e); res.status(500).json({ error: 'Something went wrong on the server.' }); });
@@ -225,7 +222,7 @@ async function settle() {
 
 /* ---------------- static ---------------- */
 app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
-app.get(/^\/(?!api|pump).*/, (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+app.get(/^\/(?!api).*/, (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 migrate().then(() => {
   app.listen(PORT, () => console.log('Bando Casino on :' + PORT));
