@@ -23,7 +23,7 @@ const rigged = stake => Math.random() < (stake > BIG ? 0.95 : TILT);
 /* ---------- balance (server is the source of truth) ---------- */
 let ME = null, held = 0, queue = Promise.resolve();
 const avail = () => ME.balance - held;
-function paintBal() { $('bal').textContent = fmt(avail()); }
+function paintBal() { $('bal').textContent = fmt(avail()); const hb = $('heroBal'); if (hb) hb.textContent = fmt(avail()); }
 function take(amt) {
   amt = Math.floor(amt);
   if (!(amt > 0)) { toast('Enter a bet'); return false; }
@@ -32,7 +32,7 @@ function take(amt) {
 }
 function release(amt) { held -= amt; paintBal(); }
 function record(game, stake, ret) {
-  held -= stake; ME.balance += ret - stake; paintBal();
+  held -= stake; ME.balance += ret - stake; paintBal(); window.onBet && window.onBet(game, stake, ret);
   queue = queue.then(() => api('play', { game, stake, ret }).then(u => { ME.balance = u.balance; paintBal(); })
     .catch(e => { toast(e.message); return api('me').then(u => { ME = u; paintBal(); }); }));
 }
@@ -57,28 +57,31 @@ $('logout').onclick = async () => { await api('logout', {}); ME = null; held = 0
 
 /* ---------- routing ---------- */
 const ROUTES = {
-  tables: ['Table Games', () => renderTables()],
-  slots: ['Slots', () => renderSlots()],
+  casino: ['Casino', () => renderLobby()],
   sports: ['Sportsbook', () => renderSports()],
   bets: ['My Bets', () => renderMyBets()],
   accounts: ['Accounts', () => renderAccounts()],
 };
+let cur = 'casino';
 function startApp() {
   $('login').classList.add('hidden'); $('app').classList.remove('hidden');
-  $('role').textContent = ME.role + ' · ' + ME.username; paintBal();
+  $('role').textContent = ME.role + ' · ' + ME.username; paintBal(); soundBtn();
   window.onhashchange = route; route();
 }
 function route() {
   let r = location.hash.slice(1);
+  if (busy) { toast('Finish this round first'); history.replaceState(null, '', '#' + cur); return; }
+  runCleanup(); held = 0; paintBal();
   const allowed = Object.keys(ROUTES).filter(k => k !== 'accounts' || ME.role !== 'player');
-  if (!allowed.includes(r)) r = ME.role === 'player' ? 'tables' : 'accounts';
-  if (busy) { toast('Finish this hand first'); history.replaceState(null, '', '#' + cur); return; }
-  cur = r;
-  $('tabs').innerHTML = allowed.map(k => `<a class="tab ${k === r ? 'on' : ''}" href="#${k}" style="text-decoration:none">${ROUTES[k][0]}</a>`).join('');
-  closeMachine && closeMachine();
-  $('view').innerHTML = ''; window.scrollTo(0, 0); ROUTES[r][1]();
+  let game = null;
+  if (r.startsWith('play-')) { game = GAMES.find(g => g.id === r.slice(5)); if (!game) r = 'casino'; }
+  else if (!allowed.includes(r)) r = 'casino';
+  cur = game ? r : r;
+  const tab = game ? 'casino' : r;
+  $('tabs').innerHTML = allowed.map(k => `<a class="tab ${k === tab ? 'on' : ''}" href="#${k}">${ROUTES[k][0]}</a>`).join('');
+  $('view').innerHTML = ''; window.scrollTo(0, 0);
+  if (game) openGame(game); else { CURGAME = null; ROUTES[r][1](); }
 }
-let cur = 'tables', closeMachine = null;
 
 /* ---------- accounts ---------- */
 const pl = a => a.balance - a.deposited;
